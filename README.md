@@ -1,4 +1,5 @@
-![Discord](https://img.shields.io/discord/1088011754115706952)
+![Builds](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.arnah.ca%2Fjob%2FReddit4J%2F)
+[![Discord](https://img.shields.io/discord/1088011754115706952)](https://discord.gg/9gyTZgDyxX)
 
 # Adding Reddit4J as a dependency
 
