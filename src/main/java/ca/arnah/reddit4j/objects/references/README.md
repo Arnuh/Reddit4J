@@ -1,0 +1,2 @@
+Reference a specific reddit object to isolate its API methods. References exist to avoid RedditClient being a conglomerate of every API endpoint while also
+keeping the data object mostly related to the data.

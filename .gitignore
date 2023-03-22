@@ -1,0 +1,9 @@
+.idea
+.classpath
+.project
+*.iml
+/.settings/
+/target/
+src/main/java/ca/arnah/reddit4j/main
+logs/
+json/
