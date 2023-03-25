@@ -37,7 +37,9 @@ import ca.arnah.reddit4j.objects.app.script.UserAgent;
 import ca.arnah.reddit4j.objects.reddit.AccessToken;
 import ca.arnah.reddit4j.requests.RedditRequest;
 import ca.arnah.reddit4j.requests.RequestPreprocessor;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class ScriptClientConfig implements RedditClientConfig{
 	
 	private final RequestPreprocessor userAgentPreprocessor;
@@ -78,6 +80,7 @@ public class ScriptClientConfig implements RedditClientConfig{
 	@Override
 	public boolean validate(){
 		if(this.accessToken == null || this.accessToken.isExpired()){
+			log.trace("Access token is missing or expired, requesting new access token.");
 			this.accessToken = this.getAccessToken.get().execute();
 		}
 		return true;

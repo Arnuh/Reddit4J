@@ -29,57 +29,46 @@ package ca.arnah.reddit4j.requests;
 
 import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class RateLimiter{
 	
 	private final LinkedBlockingQueue<RedditRequest<?>> queue;
-	private final ScheduledExecutorService executor;
-	private long remaining = 600, resetDelay = 0, used = 0;
+	private final ExecutorService executor, worker;
+	private final AtomicInteger threadCount = new AtomicInteger(0);
+	private final AtomicLong remaining = new AtomicLong(600), resetDelay = new AtomicLong(0), used = new AtomicLong(0);
 	private boolean running = true;
 	
 	public RateLimiter(){
 		this.queue = new LinkedBlockingQueue<>();
-		this.executor = Executors.newSingleThreadScheduledExecutor();
+		this.executor = Executors.newSingleThreadExecutor(r->new Thread(r, "RateLimiter-%d".formatted(threadCount.incrementAndGet())));
+		this.worker = Executors.newCachedThreadPool(r->new Thread(r, "RateLimiter-%d".formatted(threadCount.incrementAndGet())));
 		executor.execute(()->{
 			// Need to do better ratelimit handling
 			while(running){
 				try{
 					RedditRequest<?> currentRequest = queue.poll(10, TimeUnit.SECONDS);
 					if(currentRequest == null) continue;
-					HttpResponse<String> result = null;
-					try{
-						if(remaining <= 0){
-							try{
-								log.debug("Delaying requests for {} seconds due to ratelimit", resetDelay + 1);
-								Thread.sleep(TimeUnit.SECONDS.toMillis(resetDelay + 1));
-							}catch(InterruptedException e){
-								log.warn("Got interrupted while waiting for a rate limit", e);
-							}
-						}
-						result = currentRequest.executeRequest();
-					}catch(Exception ex){
-						currentRequest.getResult().completeExceptionally(ex);
-					}finally{
+					if(remaining.get() <= 0){
 						try{
-							if(result != null){
-								handleResponse(currentRequest, result);
-							}
-						}catch(Throwable ex){
-							log.catching(ex);
+							long delay = resetDelay.incrementAndGet();
+							log.debug("Delaying requests for {} seconds due to ratelimit", delay);
+							Thread.sleep(TimeUnit.SECONDS.toMillis(delay));
+						}catch(InterruptedException ex){
+							log.warn("Got interrupted while waiting for a rate limit", ex);
+							currentRequest.getResult().completeExceptionally(ex);
+							continue;
 						}
 					}
-					// Check if the request is done, if not, readd it to the queue
-					if(currentRequest.getResult().isDone()){
-						continue;
-					}
-					log.trace("Readding request to queue after failed attempt");
-					queue.add(currentRequest);
+					// Shove the request into the worker thread pool to prevent it slowing down the rate limiter.
+					worker.submit(()->execute(currentRequest));
 				}catch(Throwable ex){
 					log.catching(ex);
 				}
@@ -87,9 +76,29 @@ public class RateLimiter{
 		});
 	}
 	
+	private void execute(RedditRequest<?> request){
+		try{
+			try{
+				remaining.decrementAndGet();
+				handleResponse(request, request.executeRequest());
+			}catch(Exception ex){
+				request.getResult().completeExceptionally(ex);
+			}
+			// Check if the request is done, if not, readd it to the queue
+			if(request.getResult().isDone()){
+				return;
+			}
+			log.trace("Readding request to queue after failed attempt");
+			queue.add(request);
+		}catch(Exception ex){
+			request.getResult().completeExceptionally(ex);
+		}
+	}
+	
 	public void shutdown(){
 		running = false;
 		executor.shutdownNow();
+		worker.shutdownNow();
 	}
 	
 	public void queue(RedditRequest<?> request){
@@ -99,10 +108,13 @@ public class RateLimiter{
 	
 	private void handleResponse(RedditRequest<?> request, HttpResponse<String> result){
 		var headers = result.headers();
-		remaining = (long) Double.parseDouble(headers.firstValue("x-ratelimit-remaining").orElse("600"));
-		resetDelay = headers.firstValueAsLong("x-ratelimit-reset").orElse(600);
-		used = headers.firstValueAsLong("x-ratelimit-used").orElse(0);
-		log.trace("RateLimit Remaining: {}, Reset: {}, Used: {}", remaining, resetDelay, used);
+		long newRemaining = (long) Double.parseDouble(headers.firstValue("x-ratelimit-remaining").orElse("600"));
+		long newResetDelay = headers.firstValueAsLong("x-ratelimit-reset").orElse(600);
+		long newUsed = headers.firstValueAsLong("x-ratelimit-used").orElse(0);
+		remaining.set(newRemaining);
+		resetDelay.set(newResetDelay);
+		used.set(newUsed);
+		log.trace("RateLimit Remaining: {}, Reset: {}, Used: {}", newRemaining, newResetDelay, newUsed);
 		
 		CompletableFuture<HttpResponse<String>> requestResult = request.getResult();
 		if(!requestResult.isDone()){

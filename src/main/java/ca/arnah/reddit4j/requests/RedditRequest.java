@@ -85,6 +85,9 @@ public class RedditRequest<R>{
 	HttpResponse<String> executeRequest() throws IOException{
 		HttpResponse<String> response;
 		try{
+			// buildRequest blocks if access token is expired.
+			// Because of this no reason exists to do HttpClient#sendAsync?
+			// Instead, put #executeRequest in a separate worker thread
 			var request = buildRequest();
 			log.trace("Sending request {}", request.uri());
 			response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -96,7 +99,6 @@ public class RedditRequest<R>{
 		}catch(InterruptedException e){
 			throw new RuntimeException(e);
 		}
-		
 	}
 	
 	public R execute(){
