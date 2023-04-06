@@ -34,15 +34,16 @@ import ca.arnah.reddit4j.objects.reddit.comment.Comment;
 import ca.arnah.reddit4j.requests.Endpoint;
 import ca.arnah.reddit4j.requests.RedditRequest;
 
-public class CommentReference extends ContributeReference{
+public class CommentReference extends ContributeReference<Comment>{
 	
 	public CommentReference(RedditClient client, String id){
-		super(client, id, Kind.COMMENT);
+		super(client, id, Kind.COMMENT, Comment.class);
 	}
 	
 	/**
 	 * Submit a reply to a comment.
 	 * @param text The raw markdown body of the comment
+	 * @return The newly created comment
 	 */
 	public RedditRequest<Comment> reply(String text){
 		return client.getRequestFactory()

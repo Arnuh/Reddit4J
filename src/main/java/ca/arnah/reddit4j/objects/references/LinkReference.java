@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import ca.arnah.reddit4j.RedditClient;
 import ca.arnah.reddit4j.objects.reddit.Kind;
+import ca.arnah.reddit4j.objects.reddit.Link;
 import ca.arnah.reddit4j.objects.reddit.comment.Comment;
 import ca.arnah.reddit4j.objects.reddit.comment.CommentNode;
 import ca.arnah.reddit4j.objects.reddit.comment.CommentSettings;
@@ -42,10 +43,10 @@ import ca.arnah.reddit4j.objects.response.listings.LinkCommentResponse;
 import ca.arnah.reddit4j.requests.Endpoint;
 import ca.arnah.reddit4j.requests.RedditRequest;
 
-public class LinkReference extends ContributeReference{
+public class LinkReference extends ContributeReference<Link>{
 	
 	public LinkReference(RedditClient client, String linkId){
-		super(client, linkId, Kind.LINK);
+		super(client, linkId, Kind.LINK, Link.class);
 	}
 	
 	/**

@@ -54,6 +54,10 @@ public enum Endpoint{
 	 * Represents an endpoint described <a href="https://www.reddit.com/dev/api#POST_api_del">here</a>.
 	 */
 	POST_DELETE("api/del"),
+	/**
+	 * Represents an endpoint described <a href="https://www.reddit.com/dev/api#POST_api_editusertext">here</a>.
+	 */
+	POST_EDITUSERTEXT("api/editusertext"),
 	GET_MORE_CHILDREN("/api/morechildren"),
 	/**
 	 * Represents an endpoint described <a href="https://www.reddit.com/dev/api#POST_api_vote">here</a>.

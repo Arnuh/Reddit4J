@@ -37,20 +37,38 @@ import ca.arnah.reddit4j.requests.RedditRequest;
 import lombok.Getter;
 
 @Getter
-public abstract class ContributeReference{
+public abstract class ContributeReference<T>{
 	
 	protected final RedditClient client;
 	protected final String id;
 	protected final Kind kind;
+	protected final Class<T> clazz;
 	
-	public ContributeReference(RedditClient client, String id, Kind kind){
+	public ContributeReference(RedditClient client, String id, Kind kind, Class<T> clazz){
 		this.client = client;
 		this.id = id;
 		this.kind = kind;
+		this.clazz = clazz;
 	}
 	
 	public String getFullName(){
 		return kind.toFullName(id);
+	}
+	
+	// reply and edit include a "richtext_json"
+	// What json data is this?
+	
+	/**
+	 * Edit the body text of a comment or self-post.
+	 * @param text The raw markdown body of the comment or self-post
+	 * @return The newly edited comment or self-post
+	 */
+	public RedditRequest<T> edit(String text){
+		return client.getRequestFactory()
+			.request(clazz)
+			.endpoint(Endpoint.POST_EDITUSERTEXT)
+			.post(Map.of("thing_id", getFullName(), "text", text, "return_rtjson", String.valueOf(true)))
+			.build();
 	}
 	
 	/**
