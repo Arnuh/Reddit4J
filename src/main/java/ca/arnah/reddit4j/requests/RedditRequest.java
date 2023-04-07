@@ -196,6 +196,10 @@ public class RedditRequest<R>{
 		public Builder<R> post(Map<String, String> body){
 			MultiPartBodyPublisher multipart = new MultiPartBodyPublisher();
 			body.entrySet().forEach(multipart::addPart);
+			// Post requests usually suggest providing an api type of json
+			// Because we always want a json response and want to avoid missing this parameter
+			// We will always add it and hope it doesn't create any issues when it's not needed.
+			multipart.addPart("api_type", "json");
 			this.request.POST(multipart.build())
 				.header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 				.headers("Content-Length", String.valueOf(multipart.calculateLength()));
