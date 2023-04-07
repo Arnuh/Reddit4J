@@ -60,6 +60,10 @@ public enum Endpoint{
 	POST_EDITUSERTEXT("api/editusertext"),
 	GET_MORE_CHILDREN("/api/morechildren"),
 	/**
+	 * Represents an endpoint described <a href="https://www.reddit.com/dev/api#POST_api_submit">here</a>.
+	 */
+	POST_SUBMIT("api/submit"),
+	/**
 	 * Represents an endpoint described <a href="https://www.reddit.com/dev/api#POST_api_vote">here</a>.
 	 */
 	POST_VOTE("api/vote"),

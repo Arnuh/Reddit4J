@@ -35,7 +35,9 @@ import ca.arnah.reddit4j.objects.reddit.Subreddit;
 import ca.arnah.reddit4j.objects.reddit.comment.CommentNode;
 import ca.arnah.reddit4j.objects.reddit.comment.CommentSettings;
 import ca.arnah.reddit4j.objects.reddit.comment.RootCommentNode;
+import ca.arnah.reddit4j.objects.reddit.link.Submission;
 import ca.arnah.reddit4j.objects.response.EmptyResponse;
+import ca.arnah.reddit4j.objects.response.link.SubmissionResponse;
 import ca.arnah.reddit4j.objects.response.listings.SubredditCommentResponse;
 import ca.arnah.reddit4j.requests.Endpoint;
 import ca.arnah.reddit4j.requests.RedditRequest;
@@ -54,6 +56,10 @@ public class SubredditReference{
 	
 	public String getSubreddit(){
 		return subreddit;
+	}
+	
+	public RedditRequest<SubmissionResponse> submit(Submission submission){
+		return client.getRequestFactory().request(SubmissionResponse.class).endpoint(Endpoint.POST_SUBMIT).post(submission.toMap()).build();
 	}
 	
 	public SubredditPaginator.Builder posts(){
