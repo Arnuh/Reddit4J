@@ -29,9 +29,9 @@ package ca.arnah.reddit4j.objects.response.comments;
 
 import java.util.List;
 import ca.arnah.reddit4j.objects.reddit.NestedIdentifiable;
-import ca.arnah.reddit4j.objects.response.JsonResponse;
+import ca.arnah.reddit4j.objects.response.JsonArrayResponse;
 
-public class MoreChildrenResponse extends JsonResponse<NestedIdentifiable>{
+public class MoreChildrenResponse extends JsonArrayResponse<NestedIdentifiable>{
 	
 	public List<NestedIdentifiable> getData(){
 		return getJson().getData().getThings();

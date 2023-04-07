@@ -28,18 +28,20 @@
 package ca.arnah.reddit4j.objects.response;
 
 import java.util.List;
+import ca.arnah.reddit4j.gson.adapters.ThingTypeAdapterFactory;
+import com.google.gson.annotations.JsonAdapter;
 import lombok.Getter;
 import lombok.ToString;
 
 @Getter
 @ToString
-public class JsonResponse<T>{
+public class JsonArrayResponse<T>{
 	
-	private JsonResObject<T> json;
+	private JsonResArrayObject<T> json;
 	
 	@Getter
 	@ToString
-	public static class JsonResObject<T>{
+	public static class JsonResArrayObject<T>{
 		
 		/**
 		 * Example:<br>
@@ -51,6 +53,14 @@ public class JsonResponse<T>{
 		 */
 		private List<List<String>> errors;
 		
-		private T data;
+		private JsonResArrayData<T> data;
+	}
+	
+	@Getter
+	@ToString
+	public static class JsonResArrayData<T>{
+		
+		@JsonAdapter(ThingTypeAdapterFactory.Annotation.class)
+		private List<T> things;
 	}
 }
