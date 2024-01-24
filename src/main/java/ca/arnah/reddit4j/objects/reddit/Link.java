@@ -311,6 +311,10 @@ public class Link extends NestedIdentifiable{
 	@SerializedName("is_robot_indexable")
 	private boolean robotIndexable;
 	
+	/**
+	 * This attribute is deprecated. Please use mod_reports and user_reports instead.
+	 */
+	@Deprecated
 	@SerializedName("report_reasons")
 	private List<String> reportReasons;
 	

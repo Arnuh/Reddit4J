@@ -27,6 +27,7 @@
 
 package ca.arnah.reddit4j.objects.reddit.comment;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import ca.arnah.reddit4j.RedditClient;
@@ -260,8 +261,12 @@ public class Comment extends NestedIdentifiable{
 	@SerializedName("removal_reason")
 	private String removalReason;
 	
+	/**
+	 * This attribute is deprecated. Please use mod_reports and user_reports instead.
+	 */
+	@Deprecated
 	@SerializedName("report_reasons")
-	private Integer[] reportReasons; // TODO: Values
+	private List<String> reportReasons;
 	
 	@SerializedName("mod_reports")
 	private JsonArray modReports; // TODO: Values
