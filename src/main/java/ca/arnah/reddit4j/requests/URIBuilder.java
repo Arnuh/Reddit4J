@@ -31,6 +31,8 @@ package ca.arnah.reddit4j.requests;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,7 +55,23 @@ public class URIBuilder{
 		this.user = uri.getUserInfo();
 		this.host = uri.getHost();
 		this.port = uri.getPort();
-		this.paths.addAll(List.of(uri.getRawPath().split("/")));
+		if(!uri.getRawPath().isBlank()){
+			String rawPath = uri.getRawPath();
+			if(rawPath.startsWith("/")){
+				rawPath = rawPath.substring(1);
+			}
+			this.paths.addAll(List.of(rawPath.split("/")));
+		}
+		if(uri.getRawQuery() != null && !uri.getRawQuery().isBlank()){
+			for(String param : uri.getRawQuery().split("&")){
+				String[] parts = param.split("=");
+				if(parts.length == 2){
+					parameters.put(parts[0], URLEncoder.encode(parts[1], StandardCharsets.UTF_8));
+				}else if(parts.length == 1){
+					parameters.put(parts[0], "");
+				}
+			}
+		}
 	}
 	
 	public URIBuilder addParameter(String name, String value){
@@ -114,7 +132,7 @@ public class URIBuilder{
 			query.append(entry.getKey()).append("=").append(entry.getValue());
 		}
 		try{
-			return new URI(scheme, user, host, port, path.length() > 0 ? path.toString() : null, query.length() > 0 ? query.toString() : null, fragment);
+			return new URI(scheme, user, host, port, !path.isEmpty() ? path.toString() : null, !query.isEmpty() ? query.toString() : null, fragment);
 		}catch(URISyntaxException e){
 			throw new RuntimeException(e);
 		}
